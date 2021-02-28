@@ -12,11 +12,11 @@ This ETL extracts and processes the data from csv files and then stores it in a 
 
   `cd technical-test-SM`
 
-- Place the csv files inside
+- Place the csv files inside:
 
   `technical-test-SM/data`
 
-- Create the database from my sql client running "create_db.sql" script
+- Create the database from my sql client running "create_db.sql" script.
 
   `mysql> source /path_to/create_db.sql`
 
