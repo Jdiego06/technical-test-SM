@@ -17,7 +17,7 @@ CREATE TABLE recipes (
     contributor_id INT,
 	submitted DATE,
 	tags TEXT,
-	nutrition VARCHAR(128),
+	nutrition TEXT,
 	steps TEXT,
 	description TEXT,
 	ingredients TEXT,

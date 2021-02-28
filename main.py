@@ -1,11 +1,13 @@
 from etl import ETL
 import json
 
+chunk_size_for_load = 1000
 
 users_path = './data/PP_users.csv'
 recipes_path = './data/RAW_recipes.csv'
 interactions_path = './data/RAW_interactions.csv'
 
+# CSVs with mapped "user_id" to "u"
 users_ids_paths = [
     './data/interactions_train.csv',
     './data/interactions_test.csv',
@@ -16,7 +18,7 @@ with open('config.json') as config_json:
     config = json.load(config_json)
 
 
-etl = ETL()
+etl = ETL(chunk_size_for_load)
 etl.connect_to_db(config['hostname'], config['db_name'],
                   config['username'], config['password'])
 
@@ -31,7 +33,10 @@ etl.transform_users(users_ids_paths)
 etl.transform_recipes()
 etl.transform_interactions()
 
-print('Loading data...')
-etl.load_users()
-etl.load_recipes()
-etl.load_interactions()
+try:
+    print('Loading data...')
+    etl.load_users()
+    etl.load_recipes()
+    etl.load_interactions()
+except Exception as e:
+    print(e)

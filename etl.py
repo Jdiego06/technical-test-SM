@@ -1,15 +1,16 @@
 import pandas as pd
 import numpy as np
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, event
 
 
 class ETL:
-    def __init__(self):
+    def __init__(self, chunk_size_for_load):
+        self.chunk_size_for_load = chunk_size_for_load
         print('ETL initialized')
 
     def connect_to_db(self, hostname, db_name, username, password):
 
-        connection_str = 'mysql://{username}:{password}@{hostname}/{db_name}'.format(
+        connection_str = 'mysql://{username}:{password}@{hostname}/{db_name}?charset=utf8mb4'.format(
             username=username,
             password=password,
             hostname=hostname,
@@ -18,6 +19,12 @@ class ETL:
 
         try:
             self.engine = create_engine(connection_str)
+
+            @event.listens_for(self.engine, "before_cursor_execute")
+            def receive_before_cursor_execute(conn, cursor, statement, params, context, executemany):
+                if executemany:
+                    cursor.fast_executemany = True
+
             print('DB connection success')
         except:
             print('DB connection failed')
@@ -25,19 +32,16 @@ class ETL:
     def extract_users(self, users_path):
         self.users = pd.read_csv(
             users_path, usecols=['u', 'techniques', 'items', 'ratings'],
-            nrows=100
         )
 
     def extract_recipes(self, recipes_path):
         self.recipes = pd.read_csv(
             recipes_path, parse_dates=[4], index_col='id',
-            nrows=100
         )
 
     def extract_interactions(self, interactions_path):
         self.interactions = pd.read_csv(
             interactions_path, parse_dates=[2],
-            nrows=100
         )
 
     def transform_users(self, users_ids_files):
@@ -63,10 +67,14 @@ class ETL:
         self.users.dropna(inplace=True)
 
     def transform_recipes(self):
+        '''
+        Remove na rows and derivable columns
+        '''
+        self.recipes.drop(['n_steps', 'n_ingredients'],  axis=1, inplace=True)
         self.recipes.dropna(inplace=True)
 
     def transform_interactions(self):
-        ''' 
+        '''
         Filter only 'interactions' with valid relationships to 'user_id'
         and 'recipe_id', and drop na rows.
         '''
@@ -78,13 +86,58 @@ class ETL:
         self.interactions.dropna(inplace=True)
 
     def load_users(self):
-        print(1)
-        pass
+        print('Loading users')
+
+        for start_idx in range(0, len(self.users), self.chunk_size_for_load):
+            end_idx = start_idx + self.chunk_size_for_load
+            df = self.users.iloc[start_idx:end_idx]
+
+            try:
+                df.to_sql(
+                    'users',
+                    con=self.engine,
+                    if_exists='append',
+                    index_label='id',
+                    method='multi'
+                )
+                print('users loaded from: ', start_idx, 'to:', end_idx)
+            except:
+                print('error')
 
     def load_recipes(self):
-        print(2)
-        pass
+        print('Loading recipes')
+
+        for start_idx in range(0, len(self.recipes), self.chunk_size_for_load):
+            end_idx = start_idx + self.chunk_size_for_load
+            df = self.recipes.iloc[start_idx:end_idx]
+
+            try:
+                df.to_sql(
+                    'recipes',
+                    con=self.engine,
+                    if_exists='append',
+                    index_label='id',
+                    method='multi'
+                )
+                print('recipes loaded from: ', start_idx, 'to:', end_idx)
+            except:
+                print('error')
 
     def load_interactions(self):
-        print(3)
-        pass
+        print('Loading interactions')
+
+        for start_idx in range(0, len(self.interactions), self.chunk_size_for_load):
+            end_idx = start_idx + self.chunk_size_for_load
+            df = self.interactions.iloc[start_idx:end_idx]
+
+            try:
+                df.to_sql(
+                    'interactions',
+                    con=self.engine,
+                    if_exists='append',
+                    index_label='id',
+                    method='multi'
+                )
+                print('interactions loaded from: ', start_idx, 'to:', end_idx)
+            except:
+                print('error')
