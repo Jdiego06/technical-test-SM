@@ -1,3 +1,9 @@
+## How this project works
+
+This ETL extracts and processes the data from csv files and then stores it in a mysql database with the following structure:
+
+![sql diagram](diagrams/sql_diagram.png "SQL Diagram")
+
 ## How to run this project
 
 - Clone this repository
@@ -24,12 +30,6 @@
 
 - Run the main script  
   `python3 main.py`
-
-## How this project works
-
-This ETL extracts and processes the data from csv files and then stores it in a mysql database with the following structure:
-
-![sql diagram](diagrams/sql_diagram.png "SQL Diagram")
 
 ## Notes
 
