@@ -4,23 +4,23 @@ USE recipes_and_interactions;
 
 CREATE TABLE users (
     id INT NOT NULL,
-    techniques VARCHAR(200),
-    items VARCHAR(200),
-    ratings VARCHAR(200),
+    techniques TEXT,
+    items TEXT,
+    ratings TEXT,
     PRIMARY KEY (id)
 );
 
 CREATE TABLE recipes (
 	id INT NOT NULL,    
-	name VARCHAR(200),
+	name VARCHAR(512),
     minutes INT,
     contributor_id INT,
 	submitted DATE,
-	tags VARCHAR(200),
-	nutrition VARCHAR(200),
-	steps	VARCHAR(200),
-	description VARCHAR(200),
-	ingredients VARCHAR(200),
+	tags TEXT,
+	nutrition VARCHAR(128),
+	steps TEXT,
+	description TEXT,
+	ingredients TEXT,
     PRIMARY KEY (id)
 );
 
@@ -30,7 +30,7 @@ CREATE TABLE interactions (
     recipe_id INT NOT NULL,
     date DATE,
     rating TINYINT,
-    review VARCHAR(200),
+    review TEXT,
     PRIMARY KEY(id),
     FOREIGN KEY(user_id) REFERENCES users(id),
     FOREIGN KEY(recipe_id) REFERENCES recipes(id)

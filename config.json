@@ -1,0 +1,6 @@
+{
+  "hostname": "127.0.0.1",
+  "db_name": "recipes_and_interactions",
+  "user_name": "root",
+  "password": "root"
+}
